@@ -1,7 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
+from datetime import datetime
 
-db = SQLAlchemy()  # Assuming db is initialized in app.py and imported here
+db = SQLAlchemy() # db is initialized in app.py and imported here
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -10,22 +11,22 @@ class User(UserMixin, db.Model):
 
 class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    dealer_hand = db.Column(db.PickleType)  # Store dealer hand as a list of cards
-    game_state = db.Column(db.String(50), default='active') # Store game state e.g., "active"
-    players = db.relationship('Player', backref='game')
+    dealer_hand = db.Column(db.PickleType)
+    game_state = db.Column(db.String(50), default='active')
+    players = db.relationship('Player', backref='game', lazy='dynamic')
 
 class Player(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
-    hand = db.Column(db.PickleType)  # Storing hand as a pickled object
-    bet = db.Column(db.Float)  # Current bet
-    credits = db.Column(db.Float)  # Current credits in USD
-    has_split = db.Column(db.Boolean, default=False)  # If the player has chosen to split
+    hand = db.Column(db.PickleType)
+    bet = db.Column(db.Float)
+    credits = db.Column(db.Float)
+    has_split = db.Column(db.Boolean, default=False)
 
 class Leaderboard(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    total_winnings = db.Column(db.Float) # Total USD value won
-    date = db.Column(db.DateTime, default=db.func.current_timestamp())
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    total_winnings = db.Column(db.Float)
+    date = db.Column(db.DateTime, default=datetime.utcnow)
 
