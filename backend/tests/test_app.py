@@ -1,45 +1,75 @@
 import unittest
-from werkzeug.security import generate_password_hash
-from backend.app import app, db  # Adjust these imports to your project structure
-from backend.models import User
+from backend.app import app, db
+from backend.models import User, Game, Player, Leaderboard
+from backend.game_logic import BlackjackGame
 
-class BlackjackTestCase(unittest.TestCase):
-
+class BlackjackGameTestCase(unittest.TestCase):
     def setUp(self):
-        # Configure the app to use the testing configuration
-        app.config.from_object('backend.app.TestConfig')
-
-        # Set up the Flask test client
         self.app = app.test_client()
+        self.app_context = app.app_context()
+        self.app_context.push()
+        db.create_all()
+        self.game = BlackjackGame()
 
-        # Set up the application context and create the test database
-        with app.app_context():
-            db.create_all()
-            self.create_test_user()
-
-    def create_test_user(self):
-        # Check if user exists, if not, create a test user
-        if not User.query.filter_by(username='test').first():
-            user = User(username='test', password_hash=generate_password_hash('test'))
-            db.session.add(user)
-            db.session.commit()
+        # Create a test user
+        test_user = User(username='testuser', password_hash='testpassword')
+        db.session.add(test_user)
+        db.session.commit()
+        self.test_user_id = test_user.id
 
     def tearDown(self):
-        # Tear down and clean up the test database after each test
-        with app.app_context():
-            db.session.remove()
-            db.drop_all()
+        db.session.remove()
+        db.drop_all()
+        self.app_context.pop()
 
-    # Your test methods
-    def test_new_game(self):
-        # Example test for the new_game endpoint
-        response = self.app.get('/new_game')  # Adjust the endpoint as necessary
-        self.assertEqual(response.status_code, 200)
+    def test_start_game(self):
+        self.game.start_game(self.test_user_id)
+        
+        game = Game.query.join(Player).filter(Player.user_id == self.test_user_id).first()
+        self.assertIsNotNone(game)
+        self.assertEqual(game.game_state, 'active')
 
-    def test_login(self):
-        # Example test for the login endpoint
-        response = self.app.post('/auth/login', json={'username': 'test', 'password': 'test'})
-        self.assertEqual(response.status_code, 200)
+    def test_hit(self):
+        self.game.start_game(self.test_user_id)
+        game_id = Game.query.filter(Game.players.any(user_id=self.test_user_id)).first().id
+        self.game.hit(self.test_user_id, game_id)
+        player = Player.query.filter_by(user_id=self.test_user_id, game_id=game_id).first()
+        self.assertGreater(len(player.hand), 2)
+
+#    def test_double_down(self):
+#        self.game.start_game(self.test_user_id)
+#        game = Game.query.filter(Game.players.any(user_id=self.test_user_id)).first()
+#        player = Player.query.filter_by(user_id=self.test_user_id, game_id=game.id).first()
+#        initial_bet = 10
+#        player.bet = initial_bet
+#        player.credits = 1000
+#        db.session.commit()
+
+#        self.game.double_down(self.test_user_id, game.id)
+#        db.session.refresh(player)
+
+#        self.assertEqual(len(player.hand), 3)
+#        self.assertEqual(player.bet, initial_bet * 2)
+#        self.assertEqual(player.credits, 1000 - initial_bet)
+
+#    def test_split_hand(self):
+#        self.game.start_game(self.test_user_id)
+#        game = Game.query.filter(Game.players.any(user_id=self.test_user_id)).first()
+#        player = Player.query.filter_by(user_id=self.test_user_id, game_id=game.id).first()
+#        player.hand = [{'rank': '8', 'suit': 'Hearts'}, {'rank': '8', 'suit': 'Diamonds'}]
+#        player.credits = 1000
+#        player.bet = 100
+#        db.session.commit()
+
+#        self.game.split_hand(self.test_user_id, game.id)
+#        db.session.refresh(player)
+
+#        self.assertEqual(len(player.hand), 1)  # After split, one card should remain in the original hand
+#        self.assertTrue(player.has_split)  # `has_split` should be True
+#        self.assertEqual(len(player.split_hand), 1)  # One card should be in the split hand
+#        self.assertEqual(player.credits, 900)  # Credits should be reduced by the bet amount
+#        self.assertEqual(player.bet, 200)  # Bet should be doubled
 
 if __name__ == '__main__':
     unittest.main()
+

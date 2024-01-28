@@ -1,44 +1,27 @@
 from flask import Flask, jsonify, request
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, join_room, leave_room, emit
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, login_user, current_user
+from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from werkzeug.security import check_password_hash
-from .auth import auth_blueprint
-from .models import db, User
-from .game_logic import BlackjackGame
+from models import db, User, Game, Player
+from game_logic import BlackjackGame
 
-# Initialize Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'hombresride4'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blackjack.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Initialize database
 db.init_app(app)
-with app.app_context():
-    db.create_all()
-
-# Initialize Flask extensions
 socketio = SocketIO(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-# Unittest configuration
-class TestConfig:
-    TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///test.db'  # or another URI for your test database
-    # ... other test-specific configurations
+game_instance = BlackjackGame()
 
-
-# Blueprint for authentication routes
-app.register_blueprint(auth_blueprint, url_prefix='/auth')
-
-# User loader for Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# Login route
 @app.route('/auth/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -48,36 +31,57 @@ def login():
         return jsonify(message='Logged in successfully'), 200
     return jsonify(message='Invalid username or password'), 401
 
-@app.route('/new_game', methods=['GET', 'POST'])  # Use the correct method
-def new_game():
-    # Logic for starting a new game
-    return jsonify({'message': 'New game started'}), 200
+@app.route('/auth/logout', methods=['POST'])
+@login_required
+def logout():
+    logout_user()
+    return jsonify(message='Logged out successfully'), 200
 
-# SocketIO events
+@app.route('/game/new_game', methods=['POST'])
+@login_required
+def new_game_route():
+    game_instance.start_game(current_user.id)
+    db.session.commit()
+    return jsonify(message='New game started'), 200
+
 @socketio.on('join_game')
-def handle_join_game(data):
-    # Handle join game logic
-    pass
+@login_required
+def on_join_game(data):
+    room = data['room']
+    join_room(room)
+    emit('join_game', {'message': f'{current_user.username} has joined the game.'}, to=room)
 
 @socketio.on('new_game')
-def handle_new_game():
-    # Logic to create a new game
-    pass
+@login_required
+def on_new_game():
+    game_instance.start_game(current_user.id)
+    db.session.commit()
+    emit('new_game', {'message': 'New game created.'}, broadcast=True)
 
 @socketio.on('player_action')
-def handle_player_action(data):
+@login_required
+def on_player_action(data):
     action = data['action']
-    # Logic based on the action (hit, stand, double_down)
-    pass
+    game_id = data['game_id']
+    if action == 'hit':
+        game_instance.hit(current_user.id, game_id)
+    elif action == 'stand':
+        game_instance.stand(current_user.id, game_id)
+    elif action == 'double_down':
+        game_instance.double_down(current_user.id, game_id)
+    db.session.commit()
+    emit('player_action', {'action': action, 'game_data': game_instance.get_game_state(current_user.id)}, broadcast=True)
 
 @socketio.on('place_bet')
-def handle_place_bet(data):
+@login_required
+def on_place_bet(data):
+    game_id = data['game_id']
     bet_amount = data['betAmount']
-    # Logic to handle the bet
-    pass
+    game_instance.place_bet(current_user.id, game_id, bet_amount)
+    db.session.commit()
+    emit('place_bet', {'betAmount': bet_amount, 'game_data': game_instance.get_game_state(current_user.id)}, broadcast=True)
 
-# Run Flask app with SocketIO
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()  # Ensure the database is created
     socketio.run(app, debug=True)
-
-
