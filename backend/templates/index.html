@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>21 Buster</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>Live Leaderboard</h1>
+            <div id="leaderboard"></div>
+        </header>
+
+        <aside id="login-modal" class="modal">
+            <!-- Login Form Goes Here -->
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" id="login-button">Login</button>
+                        <button type="button" id="cancel-login">Cancel</button>
+                    </div>
+                    <p id="login-error" class="error-message hidden"></p>
+                </form>
+        </aside>
+
+        <main>
+            <section id="lobby">
+                <button id="new-game">Create New Game</button>
+                <div id="live-games">
+                    <!-- Placeholder for Live Games -->
+                    <div class="game-room">
+                        <span class="room-name">Room 1</span>
+                        <button class="join-room">Join Game</button>
+                    </div>
+                    <!-- More game rooms will be added dynamically -->
+                </div>
+            </section>
+
+            <section id="game-table" class="hidden">
+                <div id="casino">
+                    <!-- Placeholder for Casino Table -->
+                    <div class="casino-table">
+                        <div id="dealer-area" class="dealer">
+                            <h2>Dealer's Hand</h2>
+                            <div id="dealer-cards" class="cards-area">
+                                <!-- Dealer's cards will be shown here -->
+                            </div>
+                        </div>
+                        <div id="player-area" class="player-seats">
+                            <h2>Your Hand</h2>
+                            <div id="player-cards" class="cards-area">
+                                <!-- Player's cards will be shown here -->
+                            </div>
+                        </div>
+                        <div id="game-controls" class="game-controls">
+                            <button id="hit-btn">Hit</button>
+                            <button id="stand-btn">Stand</button>
+                            <button id="double-btn">Double Down</button>
+                            <!-- More game controls -->
+                            <div id="betting-controls">
+                                <button class="bet-button" data-bet="10">Bet 10</button>
+                                <button class="bet-button" data-bet="20">Bet 20</button>
+                                <button class="bet-button" data-bet="50">Bet 50</button>
+                            </div>
+                            <p id="player-credits">Credits: 1000</p>
+                        </div>
+                    </div>
+                    <!-- More casino tables could be added here -->
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>WM Duggan - All rights reserved</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.socket.io/socket.io-3.1.3.min.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>

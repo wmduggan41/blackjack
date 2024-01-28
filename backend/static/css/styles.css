@@ -1,0 +1,236 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #333;
+    color: #fff;
+}
+
+#leaderboard {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#login-modal {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+    display: none;
+}
+
+main {
+    flex: 1;
+    padding: 1rem;
+}
+
+#lobby {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+#live-games {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+#game-table {
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+/* LOGIN */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+label {
+    display: block;
+    margin-bottom: .5rem;
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: .5rem;
+    border: 1px solid #ddd;
+    border-radius: .25rem;
+}
+
+.form-actions {
+    text-align: right;
+}
+
+button {
+    padding: .5rem 1rem;
+    border: none;
+    border-radius: .25rem;
+    margin-top: 1rem;
+    cursor: pointer;
+}
+
+button[type="submit"] {
+    background-color: #5cb85c;
+    color: white;
+}
+
+button[type="button"] {
+    background-color: #f0ad4e;
+    color: white;
+}
+
+.error-message {
+    color: red;
+    margin-top: 1rem;
+    display: none;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Lobby Styles */
+#lobby {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.game-room {
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.join-room {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+
+/* Casino Styles */
+#casino {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.casino-table {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin: 10px;
+    padding: 20px;
+}
+
+.dealer, .player-seats {
+    border: 1px solid #ccc;
+    margin: 5px;
+    padding: 10px;
+}
+
+.game-controls {
+    margin-top: 10px;
+}
+
+.cards-area {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+/* General card style */
+.card {
+    width: 100px;
+    height: 140px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.card .rank, .card .suit {
+    position: absolute;
+}
+
+.card .rank {
+    top: 10px;
+    left: 10px;
+}
+
+.card .suit {
+    bottom: 10px;
+    right: 10px;
+}
+
+/* Betting UI */
+#betting-controls {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.bet-button {
+    padding: 10px 20px;
+    margin: 0 10px;
+}
+
+#player-credits {
+    margin-top: 10px;
+}
+
+/* Animations */
+@keyframes deal-card {
+    0% { transform: translateY(-200px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+.card.dealt {
+    animation: deal-card 0.5s ease-out;
+}
